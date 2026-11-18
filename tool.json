@@ -1,12 +1,19 @@
 {
-  "id": "coolcode-tool-template",
-  "title": "CoolCode Tool Starter",
-  "description": "A browser-only example that trims lines and removes exact duplicates.",
-  "category": "security",
-  "tags": ["text", "lines", "duplicates"],
-  "icon": "scan-search",
-  "url": "/coolcode-tool-template/",
-  "source": "https://github.com/jsdyer/coolcode-tool-template",
+  "id": "bcplacenames",
+  "title": "BC Place Names Explorer",
+  "description": "Explore nearby BC place names, official and recorded names, and naming decisions.",
+  "category": "places",
+  "tags": [
+    "bc",
+    "place names",
+    "geography",
+    "history",
+    "maps",
+    "nearby"
+  ],
+  "icon": "map",
+  "url": "/bcplacenames/",
+  "source": "https://github.com/jsdyer/bcplacenames",
   "hosting": "project",
   "access": "browser"
 }

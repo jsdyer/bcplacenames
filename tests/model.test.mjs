@@ -1,21 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { cleanLines } from '../web/model.mjs';
-test('trims, removes blanks and preserves first-seen order', () => {
-  assert.deepEqual(cleanLines('  Halifax\nLangley\nHalifax\n\nVancouver  '), {
-    text: 'Halifax\nLangley\nVancouver', count: 3, removed: 1,
-  });
-});
-test('supports Windows and old Mac line endings', () => {
-  assert.equal(cleanLines('a\r\nb\ra').text, 'a\nb');
-});
-test('empty text and whitespace produce an empty result', () => {
-  assert.deepEqual(cleanLines(' \n\t'), { text: '', count: 0, removed: 0 });
-});
-test('preserves case and Unicode', () => {
-  assert.equal(cleanLines('Québec\nquébec\n東京\nQuébec').text, 'Québec\nquébec\n東京');
-});
-test('treats markup as ordinary text', () => {
-  assert.equal(cleanLines('<script>alert(1)</script>\n<script>alert(1)</script>').text, '<script>alert(1)</script>');
-});
-test('rejects non-text input', () => { assert.throws(() => cleanLines(null), TypeError); });
+import {queryURL,parseResponse,normalizeFeature,filterStatus,csv,geojson,distanceKm} from '../web/model.mjs';
+const feature={type:'Feature',properties:{uri:'apps.gov.bc.ca/pub/bcgnws/names/9757',name:'Golden Ears',isOfficial:1,status:'adopted',featureType:'Peaks',position:'CENTRE',feature:{names:['apps.gov.bc.ca/pub/bcgnws/names/9758','javascript:bad']}},geometry:{type:'Point',coordinates:[-122.5075,49.36277]}};
+test('builds encoded name queries with explicit coordinate system and server filters',()=>{const u=new URL(queryURL({name:'Golden Ears & *',status:'recorded',category:'15'}));assert.equal(u.pathname,'/pub/bcgnws/names/notOfficial/search');assert.equal(u.searchParams.get('name'),'Golden Ears & *');assert.equal(u.searchParams.get('outputSRS'),'4326');assert.equal(u.searchParams.get('exactSpelling'),'1');assert.equal(u.searchParams.get('featureCategory'),'15');});
+test('nearby searches use longitude first and preserve pagination',()=>{const u=new URL(queryURL({mode:'near',lat:'49.11',lon:'-122.66',radius:'5'},51));assert.equal(u.searchParams.get('featurePoint'),'-122.66,49.11');assert.equal(u.searchParams.get('startIndex'),'51');assert.equal(u.pathname,'/pub/bcgnws/names/near');});
+test('rejects empty and out-of-area locations and unsupported radii',()=>{for(const q of [{lat:'',lon:-122,radius:5},{lat:1,lon:2,radius:5},{lat:49,lon:-122,radius:500},{lat:'abc',lon:-122,radius:5}])assert.throws(()=>queryURL({mode:'near',...q}));assert.throws(()=>queryURL({name:''}));});
+test('normalizes singular detail response and preserves identity and position',()=>{const x=parseResponse({feature},true);assert.equal(x.id,'9757');assert.equal(x.position,'CENTRE');assert.deepEqual(x.related,['9758']);assert.equal(x.url,'https://apps.gov.bc.ca/pub/bcgnws/names/9757.html');});
+test('rejects schema errors and wrong CRS instead of plotting misleading data',()=>{assert.throws(()=>parseResponse({features:[]}));assert.throws(()=>parseResponse({crs:{properties:{name:'EPSG:3005'}},properties:{totalResults:1},features:[feature]}));assert.equal(normalizeFeature({...feature,geometry:{type:'Point',coordinates:[1253789,489199]}}).coords,null);});
+test('rescinded names remain records and status filtering is explicit',()=>{const a=normalizeFeature(feature),b={...a,id:'52219',name:'Macdonald Brook',official:false,status:'rescinded'};assert.deepEqual(filterStatus([a,b],'recorded'),[b]);assert.deepEqual(filterStatus([a,b],'official'),[a]);assert.equal(geojson([b]).features[0].properties.status,'rescinded');});
+test('CSV preserves quotes and protects spreadsheet formulas; GeoJSON handles missing points',()=>{const x={...normalizeFeature(feature),name:'=SUM(1,2) "quoted"',coords:null};assert.match(csv([x]),/"'=SUM\(1,2\) ""quoted"""/);assert.equal(geojson([x]).features[0].geometry,null);});
+test('distance uses geographic coordinates',()=>{assert.equal(distanceKm([-122,49],[-122,49]),0);assert.ok(Math.abs(distanceKm([0,0],[0,1])-111.19)<0.1);});

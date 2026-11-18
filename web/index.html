@@ -1,33 +1,40 @@
 <!doctype html>
-<html lang="en-CA">
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="{{DESCRIPTION}}">
-  <title>{{TITLE}} · CoolCode</title>
-  <link rel="stylesheet" href="./style.css">
-  <script type="module" src="./app.mjs"></script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="{{DESCRIPTION}}"><meta name="referrer" content="strict-origin-when-cross-origin">
+<title>{{TITLE}} · CoolCode</title>
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./vendor/leaflet.css"><link rel="stylesheet" href="./style.css">
+<script src="./vendor/leaflet.js" defer></script><script type="module" src="./app.mjs"></script>
 </head>
-<body data-tool-id="{{TOOL_ID}}">
-  <a class="skip" href="#main">Skip to content</a>
-  <header><a href="https://coolcode.ca/">← CoolCode.ca</a><a href="{{SOURCE_URL}}">Source &amp; instructions ↗</a></header>
-  <main id="main">
-    <p class="eyebrow">Browser tool starter</p>
-    <h1>{{TITLE}}</h1>
-    <p class="intro">{{DESCRIPTION}}</p>
-    <section aria-labelledby="example-title">
-      <h2 id="example-title">Clean a list</h2>
-      <p>Trim spaces, skip blank lines and remove exact duplicates. Capitalization stays distinct.</p>
-      <div class="panels">
-        <div><label for="input">Your lines</label><textarea id="input" rows="10" maxlength="100000" spellcheck="false" placeholder="Paste one item per line"></textarea></div>
-        <div><label for="output">Cleaned lines</label><textarea id="output" rows="10" readonly spellcheck="false"></textarea></div>
-      </div>
-      <div class="actions"><button id="sample" type="button">Load example</button><button id="clear" type="button">Clear</button><button id="copy" type="button" hidden>Copy result</button></div>
-      <p id="status" role="status" aria-live="polite">Paste a list to begin.</p>
-      <noscript><p>This tool needs JavaScript to process your text. The source is available above.</p></noscript>
-    </section>
-    <aside aria-label="Privacy"><strong>Stays on your device.</strong> This example makes no API requests and does not save your text. Reloading clears it.</aside>
-  </main>
-  <footer>Part of <a href="https://coolcode.ca/">the CoolCode collection</a>.</footer>
-</body>
-</html>
+<body data-tool="{{TOOL_ID}}">
+<a class="skip" href="#search">Skip to search</a>
+<header class="topbar"><a class="brand" href="https://coolcode.ca/"><span class="brand-icon">C</span> CoolCode <span class="divider">/</span> <span>Field tools</span></a><nav aria-label="Page"><a href="#about">About &amp; sources</a><a href="{{SOURCE_URL}}">Source code ↗</a></nav></header>
+<main>
+<section class="intro"><div><p class="eyebrow"><span class="live-dot"></span> BRITISH COLUMBIA · A PLACE-NAME FIELD GUIDE</p><h1>Places have stories.<br><em>Start with a name.</em></h1><p class="lede">Find the peaks, creeks and communities around you.<br>Explore official and recorded names, one place at a time.</p></div><div class="intro-note"><svg viewBox="0 0 200 110" aria-hidden="true"><path d="M5 100 58 23 88 62 122 10 195 100M32 62l26-39 16 22M100 40l22-30 29 37M5 100h190"/><path d="m48 38 10 8 9-9m45-13 10 12 12-11"/></svg><span>49° N — 60° N</span><small>A different way to read the landscape.</small></div></section>
+<section class="explorer" aria-label="Place explorer">
+<aside class="sidebar">
+<div class="search-head"><span class="eyebrow">01 / FIND A PLACE</span><h2>Where are we looking?</h2></div>
+<form id="search">
+<div class="modes" role="group" aria-label="Search mode"><button type="button" id="name-mode" aria-pressed="true">By name</button><button type="button" id="near-mode" aria-pressed="false">Near a point</button></div>
+<div id="name-fields"><label for="query">Place name</label><input id="query" name="name" placeholder="Try Golden Ears" maxlength="120" autocomplete="off"><label class="checkbox"><input type="checkbox" id="fuzzy"> Include similar spellings</label></div>
+<div id="near-fields" hidden><p class="hint">Click a point on the map, or enter coordinates.</p><div class="two"><div><label for="latitude">Latitude</label><input id="latitude" type="number" step="any" value="49.11" min="48" max="61"></div><div><label for="longitude">Longitude</label><input id="longitude" type="number" step="any" value="-122.66" min="-140" max="-113"></div></div><label for="radius">Search radius</label><select id="radius"><option value="1">1 km</option><option value="5" selected>5 km</option><option value="10">10 km</option><option value="25">25 km</option></select><button type="button" class="text-button" id="locate">◎ Use my location</button><p class="hint">Location is requested only when you click. Coordinates go to BC when you search.</p></div>
+<div class="two filters"><div><label for="category">Feature group</label><select id="category"><option value="all">All features</option><option value="15">Peaks &amp; elevated land</option><option value="8">Rivers &amp; creeks</option><option value="4">Parks &amp; reserves</option><option value="1">Cities &amp; municipalities</option><option value="2">Rural communities</option></select></div><div><label for="status-filter">Name status</label><select id="status-filter"><option value="all">All names</option><option value="official">Official</option><option value="recorded">Other recorded</option></select></div></div>
+<p id="filter-note" class="hint" hidden>For nearby searches, status filters the current result page.</p>
+<button type="submit" class="primary" id="submit">Explore names <span aria-hidden="true">↗</span></button>
+</form>
+<div class="suggestions"><span class="eyebrow">A PLACE TO START</span><button data-example="golden">Golden Ears <span>Peaks &amp; park ↗</span></button><button data-example="langley">Around Langley <span>Within 5 km ↗</span></button><button data-example="macdonald">Macdonald Brook <span>A rescinded name ↗</span></button></div>
+<div class="results-header"><h2 id="result-heading">Your discoveries</h2><span id="result-count">—</span></div>
+<p id="message" class="message" role="status" aria-live="polite">Search a name or choose a starting point above.</p>
+<div id="results" aria-label="Search results"></div>
+<div id="pagination" hidden><button id="prev" type="button">← Previous</button><span id="page-label"></span><button id="next" type="button">Next →</button></div>
+<div class="exports"><button id="csv" disabled>↓ CSV</button><button id="geojson" disabled>↓ GeoJSON</button><span>Current visible page</span></div>
+</aside>
+<div class="map-column"><div class="map-top"><span><span class="live-dot"></span> EXPLORE THE LANDSCAPE</span><button id="fit" type="button">Fit results ⤢</button></div><div id="map" aria-label="Map of British Columbia"></div><p id="map-warning" class="map-warning" hidden>Map tiles could not load. Search results and record details still work.</p><div class="map-caption"><span><i class="key official"></i> Official <i class="key recorded"></i> Other recorded</span><span>Click the map to choose a search point</span></div>
+<section id="detail" class="detail" aria-label="Place details"><div class="detail-empty"><span class="compass" aria-hidden="true">⌖</span><div><p class="eyebrow">02 / LOOK A LITTLE CLOSER</p><h2>Every marker is a starting point.</h2><p>Choose a search result to see its naming status, recorded location and links to the original record.</p></div></div></section>
+</div></section>
+<section id="about" class="about"><div><p class="eyebrow">READING THE RECORD</p><h2>A name is a clue.<br>It isn’t the whole story.</h2><p>Points are reference locations: a creek may be marked at its mouth, a city at its municipal hall. They are not boundaries, trailheads or navigation instructions. A naming decision date is not a founding date.</p></div><div><h3>From the provincial record</h3><p>Live searches use the <a href="https://www2.gov.bc.ca/gov/content/governments/celebrating-british-columbia/historic-places/geographical-names">BC Geographical Names Office</a>. Official and other recorded names can refer to the same feature. “Rescinded” describes a name’s status; it does not mean the place is abandoned.</p><p>Origin stories and pronunciation may be available on the linked official record. Some historical records contain outdated or offensive terminology. Source: Province of British Columbia; source copyright and attribution apply.</p><h3>Your privacy</h3><p>Search text and chosen coordinates are sent to the BC service. Map tiles are requested from OpenStreetMap for the area you view. No accounts, analytics, photo uploads or saved search history. Shared links include the selected record ID only.</p></div></section>
+</main><footer><a href="https://coolcode.ca/">← More tools at CoolCode</a><span>BC Place Names Explorer · Independent, not a government service</span><a href="https://www.openstreetmap.org/fixthemap">Report a map issue ↗</a></footer>
+<noscript>This explorer needs JavaScript. You can use the <a href="https://apps.gov.bc.ca/pub/bcgnws/">official BC names service</a> directly.</noscript>
+</body></html>

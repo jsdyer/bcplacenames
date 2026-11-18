@@ -1,102 +1,54 @@
-# CoolCode browser tool template
+# BC Place Names Explorer
 
-A starting point for independent tools at `coolcode.ca/<repo>/`: a working local-text
-example, responsive UI, Python standard-library build, Node tests, PR checks and Pages
-publication. No npm install is needed.
+A browser tool for exploring the names of peaks, creeks, parks and communities in British Columbia. Search the provincial record by name or around a chosen point, distinguish official from other recorded names, inspect naming decisions, and follow the original record for historical notes.
 
-## One-time template setup
+**Use in browser:** https://coolcode.ca/bcplacenames/
 
-Enable **Settings → General → Template repository** here. This repository does not
-need Pages enabled: its workflow builds/tests but intentionally skips deployment.
-New copies also skip deployment until `scripts/init.py` sets the tool ID to match
-their repository name. This lets you create the repo before configuring Pages.
+## What it does
 
-## Start a new tool
+- Live name search, optional similar spellings, feature-group filters and official/other-recorded name searches.
+- Nearby search from a map click, typed coordinates or an explicitly requested device location (1, 5, 10 or 25 km).
+- Paginated results, coloured map markers, name details, naming decision dates and links to other name records for the same feature when supplied.
+- Share a selected record with `#name=9757`; export the visible page as CSV or GeoJSON.
+- Source links for historical narratives and pronunciation. These are not invented or inferred from the name.
 
-1. Select **Use this template → Create a new repository**, choose owner `jsdyer`,
-   a unique lowercase name such as `my-tool`, and public visibility.
-2. Clone the new repository. Use Python 3.12+ and Node 24+.
-3. Set the identity, using a slug that matches the repository name:
+The nearby endpoint has no documented official-status parameter: status is applied **to the current page**, and the UI says so. Pagination retains the underlying service total. Name searches apply status on the server. Distances are straight-line distances to reference points. A creek point may be its mouth, a municipal point its hall. These are not boundaries or navigation directions. Rescinded names do not establish abandonment; naming decision dates do not establish founding dates.
 
-```sh
-python3 scripts/init.py my-tool --title "My Tool" --description "Describe what this tool does."
-```
+This complements [Names That Time Forgot](https://coolcode.ca/namesforget/), which uses a national snapshot of current official names. This tool queries BC's live service and includes other recorded names. Photo GPS extraction is not part of this first version.
 
-Review the category, tags and icon in `tool.json`. `access: "browser"` tells the main
-catalogue that the tool works immediately without installation. `--owner` supports a different
-GitHub owner, but only projects owned by `jsdyer` inherit the CoolCode domain.
+## Run locally
 
-4. Replace the example in `web/` and its tests. Update the privacy explanation,
-   source attribution and README to describe the real tool.
-5. Test and preview:
+Use Python 3.12+ and Node 24+ for the build and tests. The deployed application needs only a modern browser and internet access.
 
 ```sh
 node --test tests/*.test.mjs
 python3 -m unittest discover -s tests -v
 python3 scripts/build.py
-python3 -m http.server 8000 --directory dist
+python3 -m http.server 8000 --bind 127.0.0.1 --directory dist
 ```
 
-Open `http://localhost:8000/`. The example trims lines, skips blanks and removes exact
-duplicates, preserving first-seen order and capitalization. It makes no API requests
-and does not persist text. Update that explanation if your app behaves differently.
+Open http://localhost:8000/. No PHP, database, npm install, Netlify or API key is required. App files live in `web/`; `dist/` is generated and must not be committed.
 
-CI also tests the browser flow and mobile layout at a project subpath. Replace the
-sample assertions in `tests/browser_smoke.py` when implementing your own UI. To run
-that check locally (optional for ordinary preview):
-
-```sh
-python3 -m venv .venv
-. .venv/bin/activate
-python3 -m pip install -r tests/browser-requirements.txt
-python3 -m playwright install --with-deps chromium
-python3 tests/browser_smoke.py
-```
-
-Playwright is a test-only dependency; the app and its static build do not use it.
+CI installs the test-only requirements in `tests/browser-requirements.txt` and Chromium, then runs `python3 tests/browser_smoke.py`. Those checks mock the API with representative responses so upstream outages do not block a valid app deployment. They cover pagination, shared links, exports, failure/empty states, safe text rendering and mobile layout. Live API behavior should also be checked when changing integration code.
 
 ## Publish and register
 
-When the actual tool is ready, in the **new tool repository** set **Settings → Pages → Build and deployment →
-Source → GitHub Actions**. Push to `main`, or manually run **Browser tool · Check and
-publish** after enabling Pages. If the initial deployment ran before Pages was enabled,
-enable it and rerun. PRs only check/build and provide a downloadable preview artifact.
+In this repository, set **Settings → Pages → Source → GitHub Actions**. Successful `main` builds deploy; PRs only check/build and save a preview artifact. Keep paths relative. Do not add a CNAME: the account site supplies the CoolCode domain.
 
-Keep asset paths and module imports relative. Check `https://coolcode.ca/my-tool/`.
-Do not add a CNAME or set `coolcode.ca` as this project's custom domain; the account
-site supplies it. Only successful `main` builds deploy.
+After verifying the live tool, copy `tool.json` into the main site's `data/tools.json`. The main site links here and does not rebuild this application.
 
-After verifying the app, copy the reviewed object from `tool.json` into `data/tools.json`
-in [the main site](https://github.com/jsdyer/jsdyer.github.io). Each tool still builds
-independently. Update the hub record when listing metadata changes; the hub is the
-authority for discovery. Ordinary app updates touch only this repository.
+## Sources, attribution and limits
 
-The main site separates **Use in your browser** from **Install yourself**. An app
-that asks for a file is still a browser tool. Standalone Linux packages should start
-in their own repositories with their own build/release workflow, rather than copying
-this browser-only scaffold. Their hub record uses `access: "install"`, links to an
-installation guide, and includes `requirements`.
+- Data: [BC Geographical Names Office](https://www2.gov.bc.ca/gov/content/governments/celebrating-british-columbia/historic-places/geographical-names), Province of British Columbia; [official API specification](https://github.com/bcgov/api-specs/blob/master/bcgnws/bcgnws.json). Crown copyright/source terms apply to government data. This project does not assert an open licence over source records.
+- API: `https://apps.gov.bc.ca/pub/bcgnws/`. Queries explicitly request `outputSRS=4326`; the parser rejects other declared systems rather than plotting Albers metres as degrees. Single-record responses use `feature`, whereas searches use `features`.
+- Narrative origin notes and audio are linked on the official record, not scraped or republished. Preserve the original source attribution when quoting those records. Some historical records contain outdated or offensive terminology.
+- Map: [OpenStreetMap contributors](https://www.openstreetmap.org/copyright). Standard tiles follow the [tile usage policy](https://operations.osmfoundation.org/policies/tiles/): visible attribution, normal browser caching, no prefetch or offline tile downloads.
+- Mapping library: locally vendored Leaflet **1.9.4**, BSD-2-Clause licence in `web/vendor/LICENSE`. Its runtime JS and CSS come from the versioned official npm distribution. No map library CDN is contacted by visitors.
 
-## Files
+The service may be unavailable or change its response schema. Searches happen on submission, with timeouts, cancellation and a bounded five-minute in-memory response cache. No scheduled bulk harvesting is performed. Exports contain only the currently displayed page; a successful HTTP response is not a guarantee that the government record is complete or current.
 
-| Path | Purpose |
-| --- | --- |
-| `tool.json` | Page metadata and a ready-to-copy catalogue record |
-| `web/` | HTML, responsive CSS, DOM interactions and separate model logic |
-| `scripts/build.py` | Escape metadata and build `web/` into `dist/` |
-| `scripts/init.py` | Set a new project's identity |
-| `tests/` | Application and builder tests |
-| `.github/workflows/pages.yml` | Check PRs and publish successful main builds |
-| `AGENTS.md` | Instructions for future coding work |
+## Privacy
 
-Namespace optional storage as `coolcode:<tool-id>:<key>`; CoolCode paths share a
-browser origin. Don't save pasted text/uploads by default. Document external APIs
-and send only the information needed for the selected action. Never embed secrets.
+The BC service receives your submitted name or coordinates. OpenStreetMap receives tile requests for the area you view. Device location is requested only after **Use my location**, and is sent to BC only after you press **Explore names**. There are no accounts, analytics, cookies or persistent app storage. Nothing uploads photographs. Shared links contain a name-record ID, not the search coordinates. Exported files are generated locally.
 
-Scheduled refresh is opt-in. Validate source data before deploying, display its date,
-and preserve the last good deployment on failure. Public-repository schedules can
-stop after 60 days without repository activity.
-
-Templates don't propagate future edits automatically. Adopt fixes explicitly and
-consider a versioned reusable workflow once several tools confirm the shared process.
-Choose and add the intended software license before distributing a new project.
+For problems with this independent explorer, [open an issue](https://github.com/jsdyer/bcplacenames/issues). For corrections to name records, use the BC Geographical Names Office's contact information.
