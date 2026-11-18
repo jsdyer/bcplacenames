@@ -17,7 +17,7 @@ async function request(url,signal){
   }finally{clearTimeout(timeout);signal?.removeEventListener('abort',abort);}
 }
 function badge(x){return el('span',x.official?'Official':x.status==='rescinded'?'Rescinded':'Other recorded','badge'+(x.official?'':' recorded'));}
-function setPoint(lat,lon){$('#latitude').value=Number(lat).toFixed(5);$('#longitude').value=Number(lon).toFixed(5);setMode('near');if(map){pointLayer.clearLayers();L.circleMarker([lat,lon],{radius:8,color:'#354b45',weight:2,fillColor:'#fff',fillOpacity:1,dashArray:'3 3'}).addTo(pointLayer);} }
+function setPoint(lat,lon){$('#latitude').value=Number(lat).toFixed(5);$('#longitude').value=Number(lon).toFixed(5);setMode('near');if(map){pointLayer.clearLayers();L.circleMarker([lat,lon],{bubblingMouseEvents:false,radius:8,color:'#354b45',weight:2,fillColor:'#fff',fillOpacity:1,dashArray:'3 3'}).addTo(pointLayer);} }
 function initMap(){
   if(!window.L){$('#map').append(el('p','The map could not load. You can still search names and read records.'));return;}
   map=L.map('map',{scrollWheelZoom:false}).setView([53.4,-125.8],5);
@@ -30,7 +30,7 @@ function renderResults(){
   const box=$('#results');box.replaceChildren();markerById.clear();markers?.clearLayers();
   for(const x of state.visible){const b=el('button',undefined,'result');b.type='button';b.dataset.id=x.id;b.setAttribute('aria-pressed',String(state.selected===x.id));b.append(el('strong',x.name));
     const meta=el('span',undefined,'meta'),type=el('span',x.type);if(state.query?.mode==='near'&&x.coords)type.append(el('span',` · ${distanceKm([Number(state.query.lon),Number(state.query.lat)],x.coords).toFixed(1)} km`));meta.append(type,badge(x));b.append(meta);b.addEventListener('click',()=>select(x.id));box.append(b);
-    if(map&&x.coords){const tooltip=el('span',x.name);const marker=L.circleMarker([x.coords[1],x.coords[0]],{radius:7,color:'#fff',weight:2,fillColor:x.official?'#22674f':'#b26c3f',fillOpacity:1}).bindTooltip(tooltip).on('click',()=>select(x.id)).addTo(markers);markerById.set(x.id,marker);}
+    if(map&&x.coords){const tooltip=el('span',x.name);const marker=L.circleMarker([x.coords[1],x.coords[0]],{bubblingMouseEvents:false,radius:7,color:'#fff',weight:2,fillColor:x.official?'#22674f':'#b26c3f',fillOpacity:1}).bindTooltip(tooltip).on('click',()=>select(x.id)).addTo(markers);markerById.set(x.id,marker);}
   }
   $('#result-count').textContent=`${state.visible.length} shown`;
   $('#csv').disabled=$('#geojson').disabled=!state.visible.length;
@@ -67,7 +67,7 @@ async function select(id){
   const known=state.items.find(x=>x.id===id);if(known)renderDetail(known,'Loading the full name record…');else $('#detail').replaceChildren(el('p','Loading name record…'));
   history.replaceState(null,'',`${location.pathname}${location.search}#name=${id}`);
   try{const x=parseResponse(await request(`${API}names/${id}.json?outputSRS=4326`,detailAbort.signal),true);if(token!==state.detailToken)return;renderDetail(x);
-    if(map&&x.coords){if(!markerById.has(id)){const m=L.circleMarker([x.coords[1],x.coords[0]],{radius:8,color:'#fff',weight:2,fillColor:x.official?'#22674f':'#b26c3f',fillOpacity:1}).bindTooltip(el('span',x.name)).addTo(markers);markerById.set(id,m);}map.setView([x.coords[1],x.coords[0]],Math.max(map.getZoom(),11));markerById.get(id)?.openTooltip();}
+    if(map&&x.coords){if(!markerById.has(id)){const m=L.circleMarker([x.coords[1],x.coords[0]],{bubblingMouseEvents:false,radius:8,color:'#fff',weight:2,fillColor:x.official?'#22674f':'#b26c3f',fillOpacity:1}).bindTooltip(el('span',x.name)).addTo(markers);markerById.set(id,m);}map.setView([x.coords[1],x.coords[0]],Math.max(map.getZoom(),11));markerById.get(id)?.openTooltip();}
   }catch(e){if(token!==state.detailToken||detailAbort.signal.aborted)return;if(known)renderDetail(known,`${e.message} Showing the search record; the official link is still available.`);else $('#detail').replaceChildren(el('h2','Record unavailable'),el('p',e.message));}
 }
 function download(ext,text,type){const url=URL.createObjectURL(new Blob([text],{type}));const a=el('a');a.href=url;a.download=`bc-place-names.${ext}`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}

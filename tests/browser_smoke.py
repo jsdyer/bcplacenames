@@ -49,7 +49,7 @@ def main():
                 page.locator('#query').fill('unsafe');page.locator('#submit').click();page.get_by_text('<img src=x onerror=alert(1)>',exact=True).wait_for();assert page.locator('#results img').count()==0
                 page.locator('#query').fill('empty');page.locator('#submit').click();page.get_by_text('No matching records.',exact=False).wait_for();assert page.locator('#csv').is_disabled()
                 page.locator('#query').fill('failure');page.locator('#submit').click();page.get_by_text('The BC service returned HTTP 503.',exact=False).wait_for();assert not page.locator('#submit').is_disabled()
-                page.goto(base+'#name=52219');page.get_by_text('Macdonald Brook',exact=True).wait_for();page.get_by_text('Decision dates describe naming decisions',exact=False).wait_for()
+                page.goto(base+'#name=52219');page.get_by_role('heading',name='Macdonald Brook',exact=True).wait_for();page.get_by_text('Decision dates describe naming decisions',exact=False).wait_for()
                 page.locator('[data-example="golden"]').click();page.locator('.result').first.wait_for();page.locator('.result').first.click();page.get_by_text('Decision dates describe naming decisions',exact=False).wait_for();page.screenshot(path=str(shots/'desktop.png'),full_page=True)
                 page.set_viewport_size({'width':390,'height':844});assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth');page.screenshot(path=str(shots/'mobile.png'),full_page=True)
                 assert not errors,errors;browser.close()

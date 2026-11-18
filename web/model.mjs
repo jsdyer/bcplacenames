@@ -39,7 +39,7 @@ export function parseResponse(d, detail=false) {
 export function filterStatus(items,status) {return items.filter(x=>status==='all'||(status==='official'?x.official:!x.official));}
 export function distanceKm(a,b) {const r=Math.PI/180,dlat=(b[1]-a[1])*r,dlon=(b[0]-a[0])*r; const h=Math.sin(dlat/2)**2+Math.cos(a[1]*r)*Math.cos(b[1]*r)*Math.sin(dlon/2)**2;return 6371*2*Math.asin(Math.min(1,Math.sqrt(h)));}
 export function csv(items) {
-  const cell=v=>'"'+String(v??'').replace(/^[=+@\-\t\r]/,"'$&").replaceAll('"','""')+'"';
+  const cell=v=>'"'+(typeof v==='string'?v.replace(/^[=+@\-\t\r]/,"'$&"):String(v??'')).replaceAll('"','""')+'"';
   return [['name','type','status','official','longitude','latitude','position','decision_date','source'],...items.map(x=>[x.name,x.type,x.status,x.official,x.coords?.[0],x.coords?.[1],x.position,x.decision,x.url])].map(r=>r.map(cell).join(',')).join('\r\n');
 }
 export function geojson(items) {return {type:'FeatureCollection',features:items.map(x=>({type:'Feature',geometry:x.coords?{type:'Point',coordinates:x.coords}:null,properties:{name:x.name,type:x.type,status:x.status,isOfficial:x.official,position:x.position,decisionDate:x.decision,source:x.url}}))};}
