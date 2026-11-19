@@ -49,6 +49,6 @@ The service may be unavailable or change its response schema. Searches happen on
 
 ## Privacy
 
-The BC service receives your submitted name or coordinates. OpenStreetMap receives tile requests for the area you view. Device location is requested only after **Use my location**, and is sent to BC only after you press **Explore names**. There are no accounts, analytics, cookies or persistent app storage. Nothing uploads photographs. Shared links contain a name-record ID, not the search coordinates. Exported files are generated locally.
+The BC service receives your submitted name or coordinates. OpenStreetMap receives tile requests for the area you view. Device location is requested only after **Use my location**, and is sent to BC only after you press **Explore names**. CoolCode counts page opens by tool ID. The count excludes names and locations. The app uses no accounts, cookies or persistent app storage. Nothing uploads photographs. Shared links contain a name-record ID, not the search coordinates. Exported files are generated locally.
 
 For problems with this independent explorer, [open an issue](https://github.com/jsdyer/bcplacenames/issues). For corrections to name records, use the BC Geographical Names Office's contact information.
